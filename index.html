@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Team Design Review</title>
+<style>html{color-scheme:light}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f5ef;color:#17262a;font:15px/1.6 -apple-system,BlinkMacSystemFont,sans-serif}main{max-width:430px;padding:28px;margin:16px;border:1px solid #dce4df;background:white;border-radius:16px}h1{font-size:24px;margin:0 0 6px}p{margin:0;color:#536467}</style>
+</head><body><main><h1>Team Design Review</h1><p id="status" role="status">共有リンクを確認しています。<br>正在验证分享链接。</p></main>
+<script>
+(async()=>{
+  const status=document.getElementById("status");
+  const linkKey=new URLSearchParams(location.hash.slice(1)).get("key");
+  const rejectLink=()=>status.innerHTML="チームから受け取った共有リンクを開いてください。<br>请打开团队提供的完整分享链接。";
+  if(!linkKey||!/^[A-Za-z0-9_-]{43}$/.test(linkKey)){rejectLink();return}
+  try{
+    const bytes=Uint8Array.from(atob(linkKey.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0));
+    const key=await crypto.subtle.importKey("raw",bytes,"AES-GCM",false,["decrypt"]);
+    const response=await fetch("preview.bin",{credentials:"omit",referrerPolicy:"no-referrer"});
+    if(!response.ok)throw new Error("payload unavailable");
+    const payload=new Uint8Array(await response.arrayBuffer());
+    const decrypted=await crypto.subtle.decrypt({name:"AES-GCM",iv:payload.subarray(0,12)},key,payload.subarray(12));
+    const page=new TextDecoder("utf-8",{fatal:true}).decode(decrypted);
+    document.open();document.write(page);document.close();
+  }catch(error){rejectLink()}
+})();
+</script></body></html>
