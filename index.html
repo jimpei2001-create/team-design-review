@@ -15,7 +15,7 @@
   try{
     const bytes=Uint8Array.from(atob(linkKey.replace(/-/g,"+").replace(/_/g,"/")),c=>c.charCodeAt(0));
     const key=await crypto.subtle.importKey("raw",bytes,"AES-GCM",false,["decrypt"]);
-    const response=await fetch("preview-revh.bin",{credentials:"omit",referrerPolicy:"no-referrer"});
+    const response=await fetch("preview-revi.bin",{credentials:"omit",referrerPolicy:"no-referrer"});
     if(!response.ok)throw new Error("payload unavailable");
     const payload=new Uint8Array(await response.arrayBuffer());
     const decrypted=await crypto.subtle.decrypt({name:"AES-GCM",iv:payload.subarray(0,12)},key,payload.subarray(12));
